@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meral Project</title>
+    <link rel="stylesheet" href="./index.css" />
+  </head>
+  <body>
+    <nav>
+      <ul>
+        <li><a href="/" onclick="navigate(event, '/')">Home</a></li>
+        <li>
+          <a href="/dashboard" onclick="navigate(event, '/dashboard')"
+            >Dashboard</a
+          >
+        </li>
+      </ul>
+    </nav>
+
+    <main>
+      <!-- <h1>Meral Project</h1> -->
+      <!-- <div id="home-div">
+        <p>Upload an image or note</p>
+        <form id="uploadForm" enctype="multipart/form-data">
+          <input
+            type="file"
+            name="file"
+            id="file"
+            accept="image/*"
+            onchange="showThumbnail(event)"
+          /><br /><br />
+          <div id="img-preview">
+            <img id="thumbnail" width="60" height="60" />
+          </div>
+          <textarea
+            rows="5"
+            cols="30"
+            name="note"
+            placeholder="Or write a note..."
+          ></textarea
+          ><br /><br />
+          <button class="generateBtn" id="generateBtn" type="submit">
+            Generate Link
+          </button>
+        </form>
+        <div id="result"></div>
+      </div> -->
+    </main>
+
+    <script>
+      function navigate(event, path) {
+        event.preventDefault();
+        history.pushState({}, "", path);
+        renderPage(path);
+      }
+
+      function renderPage(path) {
+        const main = document.querySelector("main");
+
+        if (path === "/") {
+          main.innerHTML = `
+      <div id="home-div">
+        <h1>Upload Image/Note</h1>
+        <form id="uploadForm" enctype="multipart/form-data">
+          <input
+            type="file"
+            name="file"
+            id="file"
+            accept="image/*"
+            onchange="showThumbnail(event)"
+          /><br /><br />
+          <div id="img-preview">
+            <span id="trash" onclick="removeThumb()">🗑️</span>
+            <img id="thumbnail" width="80" height="80" />
+          </div>
+          <textarea
+            rows="5"
+            cols="30"
+            name="note"
+            id="note"
+            placeholder="Or enter text here..."
+          ></textarea><br /><br />
+          <button class="generateBtn" id="generateBtn" type="submit">
+            Generate Link
+          </button>
+        </form>
+        <div id="result"></div>
+      </div>
+    `;
+
+          // reattach form submit handler after replacing innerHTML
+          document.getElementById("uploadForm").onsubmit = async (e) => {
+            e.preventDefault();
+            if (
+              document.getElementById("file").value.length > 0 ||
+              document.getElementById("note").value.length > 0
+            ) {
+              document.getElementById("generateBtn").innerHTML = "Working..";
+              document.getElementById("generateBtn").disabled = true;
+              const formData = new FormData(e.target);
+              const res = await fetch("/upload", {
+                method: "POST",
+                body: formData,
+              });
+              const data = await res.json().catch((err) => {
+                console.error("Failed to parse JSON: ", err);
+              });
+              console.log("Response data: ", data);
+
+              document.getElementById("generateBtn").innerHTML =
+                "Generate Link";
+              document.getElementById("generateBtn").disabled = false;
+              document.getElementById("result").innerHTML =
+                `<p>Share this link: <a href="${data.link}" target="_blank">${data.link}</a></p>`;
+            } else {
+              alert("Enter some text or Choose an image first!");
+            }
+          };
+        } else if (path === "/dashboard") {
+          fetch("/dashboard")
+            .then((res) => res.text())
+            .then((html) => {
+              //main.innerHTML = html;
+              main.innerHTML = `<h1>Dashboard Page</h1>`;
+            });
+        }
+      }
+
+      function showThumbnail(event) {
+        if (event.target.files.length > 0) {
+          let src = URL.createObjectURL(event.target.files[0]);
+          let preview = document.getElementById("thumbnail");
+          preview.src = src;
+          document.getElementById("img-preview").style.display = "block";
+          document.getElementById("note").disabled = true;
+        }
+      }
+      function removeThumb() {
+        document.getElementById("img-preview").style.display = "none";
+        document.getElementById("thumbnail").src = null;
+        document.getElementById("trash").style.display = "none";
+        document.getElementById("note").disabled = false;
+        document.getElementById("result").innerHTML = null;
+        document.getElementById("result").style.display = "none";
+        document.getElementById("file").value = null;
+      }
+
+      // Handle back/forward buttons
+      window.onpopstate = () => renderPage(location.pathname);
+
+      // Initial render
+      renderPage(location.pathname);
+    </script>
+  </body>
+</html>
