@@ -98,7 +98,8 @@ app.post("/upload", upload.single("file"), async (req, res) => {
     .single();
 
   if (dbError) return res.status(500).json({ error: dbError.message });
-  res.json({ link: `/view/${record.id}` });
+  //res.json({ link: `/view/${record.id}` });
+  res.json({ link: `/private_message/${record.id}` });
 });
 
 // View route
@@ -139,7 +140,8 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 //     </html>
 //   `);
 // });
-app.get("/view/:id", async (req, res) => {
+//app.get("/view/:id", async (req, res) => {
+app.get("/private_message/:id", async (req, res) => {
   let { data, error } = await supabase
     .from("links")
     .select("*")
@@ -179,14 +181,16 @@ app.get("/view/:id", async (req, res) => {
   res.send(`
   <html>
     <body>
-      <h1>'Meral Content</h1>
-      <p>Expires in <span id="countdown"></span></p>
+      <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;margin:4px;padding:6px;background-color:yellow;">
+      <h1>Your private message</h1>
+      <p>Self-destructs in <span id="countdown"></span></p>
       <div>
         ${
           data.url.endsWith(".txt")
             ? `<iframe src="${data.url}" width="400" height="200"></iframe>`
             : `<img src="${data.url}" width="400"/>`
         }
+      </div>
       </div>
       <script>
         let remainingMs = ${remainingMs};
@@ -200,7 +204,7 @@ app.get("/view/:id", async (req, res) => {
           remainingMs -= 1000;
 
           if (remainingMs <= 0) {
-            document.body.innerHTML = "<h2>Content destroyed</h2>";
+            document.body.innerHTML = "<div style='display:flex;flex-direction:column;justify-content:center;align-items:center;padding:6px;margin:6px;'><h2>Message destroyed</h2></div>";
             fetch('/destroy/${data.id}', { method: 'POST' });
           }
         }
