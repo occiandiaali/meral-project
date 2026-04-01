@@ -181,7 +181,7 @@ app.get("/private_message/:id", async (req, res) => {
   res.send(`
   <html>
     <body>
-      <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;margin:4px;padding:6px;background-color:yellow;">
+      <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;margin:4px;padding:6px;background-color:orange;">
       <h1>Your private message</h1>
       <p>Self-destructs in <span id="countdown"></span></p>
       <div>
